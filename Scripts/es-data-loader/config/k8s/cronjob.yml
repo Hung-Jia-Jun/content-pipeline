@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: es-data-loader
+  namespace: pipeline-app
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pipeline-service-account
+          imagePullSecrets:
+          - name: artifactregistry-image-pull-secret
+          containers:
+          - name: es-data-loader
+            image: us-east1-docker.pkg.dev/test-project-414912/test-repository/es-data-loader-app:latest
+            env:
+              - name: ELASTICSEARCH_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: es-secret
+                    key: secret
+          restartPolicy: OnFailure

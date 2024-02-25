@@ -1,0 +1,69 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch
+  namespace: elastic-system
+spec:
+  version: "8.9.0"
+  volumeClaimDeletePolicy: DeleteOnScaledownOnly
+  podDisruptionBudget:
+    spec:
+      minAvailable: 2
+      selector:
+        matchLabels:
+          elasticsearch.k8s.elastic.co/cluster-name: elasticsearch
+  nodeSets:
+    - name: default
+      config:
+        node.roles: ["master", "data", "ingest", "ml", "remote_cluster_client"]
+      podTemplate:
+        metadata:
+          labels:
+            app.kubernetes.io/name: elasticsearch
+            app.kubernetes.io/version: "8.9.0"
+            app.kubernetes.io/component: "elasticsearch"
+            app.kubernetes.io/part-of: "elk"
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-nodepool: es-node-pool
+          initContainers:
+            - name: max-map-count-check
+              command:
+                - sh
+                - -c
+                - while true; do mmc=$(cat /proc/sys/vm/max_map_count); if test ${mmc} -eq 262144; then exit 0; fi; sleep 1; done
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                  ephemeral-storage: 16Mi
+                limits:
+                  cpu: 10m
+                  memory: 16Mi
+                  ephemeral-storage: 16Mi
+          containers:
+            - name: elasticsearch
+              resources:
+                requests:
+                  cpu: 990m
+                  memory: 4080Mi
+                  ephemeral-storage: 1008Mi
+                limits:
+                  cpu: 1000m
+                  memory: 4080Mi
+                  ephemeral-storage: 1008Mi
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms2g -Xmx2g"
+      count: 3
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data # Do not change this name unless you set up a volume mount for the data path.
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+           
+            storageClassName: standard-rwo

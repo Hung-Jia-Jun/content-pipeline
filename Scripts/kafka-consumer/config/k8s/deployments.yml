@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pipeline-app
+  labels:
+    app: kafka-test-consumer
+  name: kafka-test-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-test-consumer
+  template:
+    metadata:
+      labels:
+        app: kafka-test-consumer
+    spec:
+      serviceAccountName: pipeline-service-account
+      imagePullSecrets:
+      - name: artifactregistry-image-pull-secret
+      containers:
+      # 如果有CI/CD pipeline，可以使用sha1產生的image tag来替换
+      # 這樣可以觸發k8s rollout
+      - image: us-east1-docker.pkg.dev/test-project-414912/test-repository/kafka-app:latest
+        name: kafka-app
