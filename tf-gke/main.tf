@@ -6,6 +6,7 @@ module "gke_cluster" {
 module "composer" {
   source = "./modules/composer/"
   project_id = var.project_id
+  project_number = var.project_number
 }
 
 module "artifact_registry" {
@@ -15,4 +16,5 @@ module "artifact_registry" {
 
 module "gcs_bucket" {
   source = "./modules/gcs_bucket/"
+  project_id = var.project_id
 }
