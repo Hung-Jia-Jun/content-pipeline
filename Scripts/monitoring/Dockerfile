@@ -1,6 +1,5 @@
-FROM python:3.8-slim-buster
+FROM --platform=linux/amd64 python:3.9 as build
+COPY app /app
 WORKDIR /app
-ADD . /app
-RUN pip install --no-cache-dir -r requirements.txt
-EXPOSE 8082
+RUN pip install -r requirements.txt
 CMD ["python", "test_custom_metrics.py"]

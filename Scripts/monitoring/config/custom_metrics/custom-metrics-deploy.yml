@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-custom-metrics-deployment
+  namespace: test-workload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-custom-metrics
+  template:
+    metadata:
+      labels:
+        app: test-custom-metrics
+    spec:
+      containers:
+      - name: test-custom-metrics
+        image: us-east1-docker.pkg.dev/test-project-416005/test-repository/test_custom_metrics:latest
+        ports:
+        - name: web
+          containerPort: 8082
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-custom-metrics-service
+  namespace: test-workload
+  labels:
+    # add this label to the service to enable prometheus scraping
+    micrometer-prometheus-discovery: 'true'
+    app: test-custom-metrics-service
+spec:
+  selector:
+    app: test-custom-metrics
+  ports:
+  - name: web
+    protocol: TCP
+    port: 80
+    targetPort: web
+  type: ClusterIP
