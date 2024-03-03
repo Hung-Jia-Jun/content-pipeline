@@ -17,9 +17,6 @@ es_client = Elasticsearch(f'{ELASTICSEARCH_SCHEMA}://{ELASTICSEARCH_HOST}:{ELAST
                           basic_auth=("elastic", ELASTICSEARCH_PASSWORD))
 
 bucket = gcs_client.bucket(GCS_BUCKET_NAME)
-blob_name = f"{today}/part-00000"
-blob = bucket.blob(blob_name)
-data = blob.download_as_string().decode('utf-8')
 blobs = bucket.list_blobs(f'{GCS_BUCKET_NAME}/{today}')
 
 for blob in blobs:
